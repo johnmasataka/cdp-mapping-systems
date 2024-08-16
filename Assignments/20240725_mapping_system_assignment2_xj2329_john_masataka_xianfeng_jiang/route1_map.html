@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mapbox 3D View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Your Mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiam9obm1hc2F0YWthIiwiYSI6ImNseDl0ZnByMzJ1cnQyam9lbnB5ajQ3d3EifQ.vDNx6tuvH4CxRBRu-Tt0Tg';
+
+        // Initialize the map
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v11', // Map style
+            // 'mapbox://styles/mapbox/streets-v11'
+            center: [-73.9605, 40.7916], // Initial center of the map [lng, lat]
+            zoom: 15.5, // Initial zoom level
+            pitch: 45, // Tilt the map for 3D effect
+            bearing: 5 // Rotate the map for better 3D view
+        });
+
+        // Add navigation controls to the map
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Load the GeoJSON data and add it to the map
+        map.on('load', () => {
+            // Add routes as line layers
+            map.addSource('route1', {
+                'type': 'geojson',
+                'data': 'route_option_1.geojson'
+            });
+            // map.addSource('route2', {
+            //     'type': 'geojson',
+            //     'data': 'route_option_2.geojson'
+            // });
+            // map.addSource('route3', {
+            //     'type': 'geojson',
+            //     'data': 'route_option_3.geojson'
+            // });
+
+            map.addLayer({
+                'id': 'route1',
+                'type': 'line',
+                'source': 'route1',
+                'layout': {},
+                'paint': {
+                    'line-color': '#888',
+                    'line-width': 2
+                } 
+            });
+
+            map.addLayer({
+                'id': 'route1-fill',
+                'type': 'fill',
+                'source': 'route1',
+                'paint': {
+                    'fill-color': 'rgba(255, 249, 39, 0.1)', // Translucent Gray Fill: rgba(128, 128, 128, 0.7) 
+                    'fill-opacity': 1
+                }
+            });
+
+            // map.addLayer({
+            //     'id': 'route2',
+            //     'type': 'line',
+            //     'source': 'route2',
+            //     'layout': {},
+            //     'paint': {
+            //         'line-color': '#888',
+            //         'line-width': 2
+            //     }
+            // });
+
+            // map.addLayer({
+            //     'id': 'route3',
+            //     'type': 'line',
+            //     'source': 'route3',
+            //     'layout': {},
+            //     'paint': {
+            //         'line-color': '#888',
+            //         'line-width': 2
+            //     }
+            // });
+
+
+
+
+            // // Assuming `route1_points.geojson` contains points for start and end
+            // map.addSource('route1-points', {
+            //     'type': 'geojson',
+            //     'data': 'route1_points.geojson'
+            // });
+
+            // map.addLayer({
+            //     'id': 'route1-beams',
+            //     'type': 'fill-extrusion',
+            //     'source': 'route1-points',
+            //     'paint': {
+            //         'fill-extrusion-color': '#FF0000', // Beam color
+            //         'fill-extrusion-height': [
+            //             'case',
+            //             ['==', ['get', 'type'], '-73.9596, 40.8089'], // Check if point is start
+            //             200, // Height of the beam
+            //             ['==', ['get', 'type'], '73.9589, 40.7829'],   // Check if point is end
+            //             200, // Height of the beam
+            //             0     // No height for other points
+            //         ],
+            //         'fill-extrusion-base': 0,
+            //         'fill-extrusion-opacity': 0.8
+            //     }
+            // });
+
+
+
+
+
+            // Add highlighted points source and layer
+            map.addSource('highlighted_points', {
+                'type': 'geojson',
+                'data': 'highlighted_points.geojson'
+            });
+
+            map.addLayer({
+                'id': 'highlighted_points-beams',
+                'type': 'fill-extrusion',
+                'source': 'highlighted_points',
+                'paint': {
+                    'fill-extrusion-color': '#FF0000', // Beam color
+                    'fill-extrusion-height': 200, // Height of the beam
+                    'fill-extrusion-base': 0,
+                    'fill-extrusion-opacity': 0.8
+                }
+            });
+
+            map.addLayer({
+                'id': 'highlighted_points-circle',
+                'type': 'circle',
+                'source': 'highlighted_points',
+                'paint': {
+                    'circle-radius': 10,
+                    'circle-color': '#FF0000'
+                }
+            });
+
+
+
+
+
+            // Add incidents within each route as a circle layer
+            map.addSource('incidents_route1', {
+                'type': 'geojson',
+                'data': 'incidents_in_route1.geojson'
+            });
+
+            map.addLayer({
+                'id': 'incidents_route1',
+                'type': 'circle',
+                'source': 'incidents_route1',
+                'paint': {
+                    'circle-radius': 6,
+                    'circle-color': '#FF0000'
+                }
+            });
+
+            // map.addSource('incidents_route2', {
+            //     'type': 'geojson',
+            //     'data': 'incidents_in_route2.geojson'
+            // });
+
+            // map.addLayer({
+            //     'id': 'incidents_route2',
+            //     'type': 'circle',
+            //     'source': 'incidents_route2',
+            //     'paint': {
+            //         'circle-radius': 4,
+            //         'circle-color': '#00FF00'
+            //     }
+            // });
+
+            // map.addSource('incidents_route3', {
+            //     'type': 'geojson',
+            //     'data': 'incidents_in_route3.geojson'
+            // });
+
+            // map.addLayer({
+            //     'id': 'incidents_route3',
+            //     'type': 'circle',
+            //     'source': 'incidents_route3',
+            //     'paint': {
+            //         'circle-radius': 4,
+            //         'circle-color': '#0000FF'
+            //     }
+            // });
+
+            // Add 3D buildings layer
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 15,
+                'paint': {
+                    'fill-extrusion-color': '#aaa',
+
+                    // Use an 'interpolate' expression to add a smooth transition effect to the
+                    // buildings as the user zooms in or out.
+                    'fill-extrusion-height': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        15,
+                        0,
+                        15.05,
+                        ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        15,
+                        0,
+                        15.05,
+                        ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.6
+                }
+            });
+
+
+
+             // Create a popup
+             const popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: true
+            });
+
+            // Set up event listener for clicks on incidents
+            map.on('click', 'incidents_route1', (e) => {
+                const coordinates = e.features[0].geometry.coordinates.slice();
+                const description = e.features[0].properties.OFNS_DESC; // Incident Type: the Column "OFNS_DESC" in data_filtered.csv 
+                const time = e.features[0].properties.CMPLNT_FR_TM; // Incident Time: the Column "CMPLNT_FR_TM" in data_filtered.csv 
+
+            //     function formatTime(time) {
+            //     // Extract hours and minutes from time string (format HH:MM:SS)
+            //     return time.split(':').slice(0, 3).join(':');
+            // }
+
+                // Ensure the popup is closed if it's already open
+                popup.remove();
+
+                // Set popup content and position
+                popup.setLngLat(coordinates)
+                    .setHTML(`<h3>Type: ${description}</h3><p>Time: ${time}</p>`)
+                    .addTo(map);
+            });
+
+            // map.on('click', 'incidents_route2', (e) => {
+            //     const coordinates = e.features[0].geometry.coordinates.slice();
+            //     const description = e.features[0].properties.OFNS_DESC;
+
+            //     // Ensure the popup is closed if it's already open
+            //     popup.remove();
+
+            //     // Set popup content and position
+            //     popup.setLngLat(coordinates)
+            //         .setHTML(`<h3>Type: ${description}</h3>`)
+            //         .addTo(map);
+            // });
+
+            // map.on('click', 'incidents_route3', (e) => {
+            //     const coordinates = e.features[0].geometry.coordinates.slice();
+            //     const description = e.features[0].properties.OFNS_DESC;
+
+            //     // Ensure the popup is closed if it's already open
+            //     popup.remove();
+
+            //     // Set popup content and position
+            //     popup.setLngLat(coordinates)
+            //         .setHTML(`<h3>Type: ${description}</h3>`)
+            //         .addTo(map);
+            // });
+
+            // Change cursor to pointer when hovering over points
+            map.on('mouseenter', 'incidents_route1', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'incidents_route1', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            map.on('mouseenter', 'incidents_route2', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'incidents_route2', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            map.on('mouseenter', 'incidents_route3', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'incidents_route3', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+        });
+    </script>
+</body>
+</html>

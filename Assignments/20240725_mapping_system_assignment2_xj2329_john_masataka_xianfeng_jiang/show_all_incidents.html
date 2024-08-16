@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mapbox 3D View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Your Mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiam9obm1hc2F0YWthIiwiYSI6ImNseDl0ZnByMzJ1cnQyam9lbnB5ajQ3d3EifQ.vDNx6tuvH4CxRBRu-Tt0Tg';
+
+        // Initialize the map
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11', // Map style
+            center: [-74.0060, 40.7128], // Initial center of the map [lng, lat]
+            zoom: 10, // Initial zoom level
+            pitch: 60, // Tilt the map for 3D effect
+            bearing: -17.6 // Rotate the map for better 3D view
+        });
+
+        // Add navigation controls to the map
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Load the GeoJSON data and add it to the map
+        map.on('load', () => {
+            // Add routes as line layers
+            map.addSource('route1', {
+                'type': 'geojson',
+                'data': 'route_option_1.geojson'
+            });
+            // map.addSource('route2', {
+            //     'type': 'geojson',
+            //     'data': 'route_option_2.geojson'
+            // });
+            // map.addSource('route3', {
+            //     'type': 'geojson',
+            //     'data': 'route_option_3.geojson'
+            // });
+
+            map.addLayer({
+                'id': 'route1',
+                'type': 'line',
+                'source': 'route1',
+                'layout': {},
+                'paint': {
+                    'line-color': '#888',
+                    'line-width': 2, 
+                }
+            });
+
+            // map.addLayer({
+            //     'id': 'route2',
+            //     'type': 'line',
+            //     'source': 'route2',
+            //     'layout': {},
+            //     'paint': {
+            //         'line-color': '#888',
+            //         'line-width': 2
+            //     }
+            // });
+
+            // map.addLayer({
+            //     'id': 'route3',
+            //     'type': 'line',
+            //     'source': 'route3',
+            //     'layout': {},
+            //     'paint': {
+            //         'line-color': '#888',
+            //         'line-width': 2
+            //     }
+            // });
+
+            // Add incidents as a circle layer
+            map.addSource('incidents', {
+                'type': 'geojson',
+                'data': 'filtered_incidents.geojson'
+            });
+
+            map.addLayer({
+                'id': 'incidents',
+                'type': 'circle',
+                'source': 'incidents',
+                'paint': {
+                    'circle-radius': 4,
+                    'circle-color': '#FF0000'
+                }
+            });
+
+            // Add 3D buildings layer
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 15,
+                'paint': {
+                    'fill-extrusion-color': '#aaa',
+
+                    // Use an 'interpolate' expression to add a smooth transition effect to the
+                    // buildings as the user zooms in or out.
+                    'fill-extrusion-height': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        15,
+                        0,
+                        15.05,
+                        ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        15,
+                        0,
+                        15.05,
+                        ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.6
+                }
+            });
+        });
+    </script>
+</body>
+</html>
